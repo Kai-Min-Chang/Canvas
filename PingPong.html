@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping Pong</title>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        canvas {
+            background: #eee;
+            display: block;
+            margin: 0 auto;
+        }
+        .box {
+            width: 480px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: row;
+            align-items: end;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div id="score">SCORE: 0</div>
+    </div>
+    <canvas id="canvas" width="480" height="350"></canvas>    
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext("2d");
+        const board = document.getElementById("score");
+        let paddleH = 10;
+        let paddleW = 90;
+        let paddleX = (canvas.width - paddleW)/2;
+        let paddleY = canvas.height-30;
+        let x = canvas.width / 2;
+        let y = canvas.height /2;
+        let dx = 2;
+        let dy = -2;
+        let score = 0;
+        let ballRadius = 10;
+        let rightPress = false, leftPress = false;
+
+        document.addEventListener("keydown",keyDownHandler,false);
+        document.addEventListener("keyup", keyUpHandler, false);
+
+        function keyDownHandler(e){
+            if(e.key === "Right" || e.key === "ArrowRight"){
+                rightPress = true;
+            }else if(e.key === "Left" || e.key === "ArrowLeft"){
+                leftPress = true;
+            }
+        }
+
+        function keyUpHandler (e){
+            if(e.key === "Right" || e.key === "ArrowRight"){
+                rightPress = false;
+            }else if(e.key === "Left" || e.key === "ArrowLeft"){
+                leftPress = false;
+            }
+        }
+
+        function drawPaddle() {
+            if (rightPress) {
+                paddleX = Math.min(paddleX + 5, canvas.width - paddleW);
+            } else if (leftPress) {
+                paddleX = Math.max(paddleX - 5, 0);
+            }
+            ctx.beginPath();
+            ctx.rect(paddleX,paddleY,paddleW,paddleH);
+            ctx.fillStyle = "#0095DD";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawBall(){
+            ctx.beginPath();
+            ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "black";
+            ctx.fill();
+
+            ctx.closePath();
+        }
+
+        function draw(){
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            drawBall();
+            drawPaddle();
+            if(x+dx>=canvas.width-ballRadius||x+dx<=ballRadius){
+                dx = -dx;
+            }
+            if(y+dy<ballRadius){
+                dy = -dy;
+            }
+            else if(y + dy>=paddleY-ballRadius+1 && y + dy < paddleY-ballRadius+Math.abs(dy)){
+                if(x > paddleX-ballRadius && x < paddleX+paddleW+ballRadius){
+                    console.log("X:" + x);
+                    console.log("PaddleX: " + paddleX);
+                    console.log("paddleW/2: " + paddleW/2);
+                    console.log(x-(paddleX+(paddleW/2)));
+                    dx = (x-(paddleX+(paddleW/2)))/10;
+                    dy = -Math.min(1.07*dy,8);
+                    score++;
+                    board.innerHTML = "SCORE: " + score;
+                }
+            }
+            if(y+ dy >canvas.height-ballRadius){
+                alert("GAME OVER \n按下確定重新開始");
+                document.location.reload();
+                clearInterval(interval);
+            }
+            x += dx;
+            y += dy;
+        }
+
+        const interval = setInterval(draw,10);
+    </script>
+    
+</body>
+</html>
