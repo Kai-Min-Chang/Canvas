@@ -13,7 +13,7 @@
             box-sizing: border-box;
         }
         canvas {
-            background: #eee;
+            background: black;
             display: block;
             margin: 0 auto;
         }
@@ -24,30 +24,36 @@
             flex-direction: row;
             align-items: end;
             height: 100px;
+            justify-content: space-between;
         }
     </style>
 </head>
 <body>
     <div class="box">
         <div id="score">SCORE: 0</div>
+        <div id="speed">SPEED: 2.00</div>
     </div>
-    <canvas id="canvas" width="480" height="350"></canvas>    
+    <canvas id="canvas" width="600" height="400"></canvas>    
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext("2d");
-        const board = document.getElementById("score");
-        let paddleH = 10;
-        let paddleW = 90;
+        const board_score = document.getElementById("score");
+        const board_speed = document.getElementById("speed");
+        let paddleH = 5;
+        let paddleW = 100;
         let paddleX = (canvas.width - paddleW)/2;
-        let paddleY = canvas.height-30;
+        let paddleY = canvas.height-50;
         let x = canvas.width / 2;
         let y = canvas.height /2;
         let dx = 2;
         let dy = -2;
         let score = 0;
+        let speed = Math.abs(dy);
         let ballRadius = 10;
         let rightPress = false, leftPress = false;
+        let colors = ["#ffff00","#00bfff","#adff2f","#da70d6","#00ffff","#ffa500","#ff6347","#ffe4b5","#f0ffff","#7fffd4"];
+        let cr = colors[Math.floor(Math.random()*10)];
 
         document.addEventListener("keydown",keyDownHandler,false);
         document.addEventListener("keyup", keyUpHandler, false);
@@ -76,7 +82,7 @@
             }
             ctx.beginPath();
             ctx.rect(paddleX,paddleY,paddleW,paddleH);
-            ctx.fillStyle = "#0095DD";
+            ctx.fillStyle = "white";
             ctx.fill();
             ctx.closePath();
         }
@@ -84,9 +90,8 @@
         function drawBall(){
             ctx.beginPath();
             ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-            ctx.fillStyle = "black";
+            ctx.fillStyle = cr;
             ctx.fill();
-
             ctx.closePath();
         }
 
@@ -96,20 +101,31 @@
             drawPaddle();
             if(x+dx>=canvas.width-ballRadius||x+dx<=ballRadius){
                 dx = -dx;
+                cr = colors[Math.floor(Math.random()*10)];
             }
             if(y+dy<ballRadius){
                 dy = -dy;
+                cr = colors[Math.floor(Math.random()*10)];
             }
-            else if(y + dy>=paddleY-ballRadius+1 && y + dy < paddleY-ballRadius+Math.abs(dy)){
+            else if(y + dy>=paddleY-ballRadius && y + dy < paddleY-ballRadius+Math.abs(dy)){
                 if(x > paddleX-ballRadius && x < paddleX+paddleW+ballRadius){
                     console.log("X:" + x);
                     console.log("PaddleX: " + paddleX);
                     console.log("paddleW/2: " + paddleW/2);
                     console.log(x-(paddleX+(paddleW/2)));
-                    dx = (x-(paddleX+(paddleW/2)))/10;
-                    dy = -Math.min(1.07*dy,8);
                     score++;
-                    board.innerHTML = "SCORE: " + score;
+                    dx = (x-(paddleX+(paddleW/2)))/10;
+                    if(score%3===0){
+                        dy = 0.5+dy;
+                    }
+                    dy = -dy;
+                    cr = colors[Math.floor(Math.random()*10)];
+                    
+                    speed = Math.abs(dy);
+                    speed = speed.toFixed(2);
+                    
+                    board_speed.innerHTML = "SPEED: " + speed;
+                    board_score.innerHTML = "SCORE: " + score;
                 }
             }
             if(y+ dy >canvas.height-ballRadius){
